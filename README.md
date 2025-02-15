@@ -11,9 +11,7 @@ El ejercicio se debe traer terminado para el siguiente laboratorio (Parte II).
 
 ## Antes de hacer este ejercicio, realice [el ejercicio introductorio al manejo de Spring y la configuración basada en anotaciones](https://github.com/ARSW-ECI/Spring_LightweightCont_Annotation-DI_Example).
 
-	_Desarrollado en el directorio: _ 
-
- 	![imagen](https://github.com/user-attachments/assets/c5d65f32-acc5-4f45-bc45-5c09ad84c068)
+	_Desarrollado en el directorio /Parte I_ 
 
 En este ejercicio se va a construír un modelo de clases para la capa lógica de una aplicación que permita gestionar planos arquitectónicos de una prestigiosa compañia de diseño. 
 
