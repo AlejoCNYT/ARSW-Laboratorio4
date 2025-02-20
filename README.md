@@ -39,4 +39,4 @@ En este ejercicio se va a construír un modelo de clases para la capa lógica de
 ## Autores:
 
 ### Daniel Alejandro Acero
-### 
+### Juan Felipe A. Martinez
