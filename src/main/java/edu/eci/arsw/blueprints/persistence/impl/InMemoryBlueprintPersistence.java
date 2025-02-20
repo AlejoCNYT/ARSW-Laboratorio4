@@ -1,49 +1,75 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.eci.arsw.blueprints.persistence.impl;
 
 import edu.eci.arsw.blueprints.model.Blueprint;
-import edu.eci.arsw.blueprints.model.Point;
 import edu.eci.arsw.blueprints.persistence.BlueprintNotFoundException;
 import edu.eci.arsw.blueprints.persistence.BlueprintPersistenceException;
 import edu.eci.arsw.blueprints.persistence.BlueprintsPersistence;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 /**
- *
- * @author hcadavid
+ * In-memory implementation of the BlueprintsPersistence interface.
  */
-public class InMemoryBlueprintPersistence implements BlueprintsPersistence{
+@Service
+public class InMemoryBlueprintPersistence implements BlueprintsPersistence {
 
-    private final Map<Tuple<String,String>,Blueprint> blueprints=new HashMap<>();
+    private final Map<String, Set<Blueprint>> blueprints = new HashMap<>();
 
-    public InMemoryBlueprintPersistence() {
-        //load stub data
-        Point[] pts=new Point[]{new Point(140, 140),new Point(115, 115)};
-        Blueprint bp=new Blueprint("_authorname_", "_bpname_ ",pts);
-        blueprints.put(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
-        
-    }    
-    
     @Override
-    public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException {
-        if (blueprints.containsKey(new Tuple<>(bp.getAuthor(),bp.getName()))){
-            throw new BlueprintPersistenceException("The given blueprint already exists: "+bp);
+    public void saveBlueprint(Blueprint blueprint) throws BlueprintPersistenceException {
+        blueprints.computeIfAbsent(blueprint.getAuthor(), k -> new HashSet<>());
+
+        boolean exists = blueprints.get(blueprint.getAuthor()).stream()
+                .anyMatch(bp -> bp.getName().equals(blueprint.getName()));
+
+        if (exists) {
+            throw new BlueprintPersistenceException("Blueprint with name '" + blueprint.getName() + "' already exists.");
         }
-        else{
-            blueprints.put(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
-        }        
+
+        blueprints.get(blueprint.getAuthor()).add(blueprint);
     }
 
     @Override
-    public Blueprint getBlueprint(String author, String bprintname) throws BlueprintNotFoundException {
-        return blueprints.get(new Tuple<>(author, bprintname));
+    public Blueprint getBlueprint(String author, String name) throws BlueprintNotFoundException {
+        return blueprints.getOrDefault(author, Collections.emptySet())
+                .stream()
+                .filter(bp -> bp.getName().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new BlueprintNotFoundException("Blueprint '" + name + "' not found for author '" + author + "'."));
     }
 
-    
-    
+    @Override
+    public Set<Blueprint> getAllBlueprints() {
+        Set<Blueprint> allBlueprints = new HashSet<>();
+        blueprints.values().forEach(allBlueprints::addAll);
+        return allBlueprints;
+    }
+
+    @Override
+    public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException {
+        if (!blueprints.containsKey(author)) {
+            throw new BlueprintNotFoundException("No blueprints found for author: " + author);
+        }
+        return blueprints.get(author);
+    }
+
+    @Override
+    public void deleteBlueprint(String author, String name) throws BlueprintNotFoundException {
+        if (!blueprints.containsKey(author)) {
+            throw new BlueprintNotFoundException("Author '" + author + "' does not have any blueprints.");
+        }
+
+        Set<Blueprint> authorBlueprints = blueprints.get(author);
+        boolean removed = authorBlueprints.removeIf(bp -> bp.getName().equals(name));
+
+        if (!removed) {
+            throw new BlueprintNotFoundException("Blueprint '" + name + "' not found.");
+        }
+
+        if (authorBlueprints.isEmpty()) {
+            blueprints.remove(author);
+        }
+    }
+
 }

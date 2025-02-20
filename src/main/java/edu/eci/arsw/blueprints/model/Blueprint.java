@@ -14,11 +14,11 @@ public class Blueprint {
     private List<Point> points=null;
     
     private String name=null;
-            
-    public Blueprint(String author,String name,Point[] pnts){
-        this.author=author;
-        this.name=name;
-        points=Arrays.asList(pnts);
+
+    public Blueprint(String author, String name, Point[] pnts) {
+        this.author = author;
+        this.name = name;
+        this.points = (pnts != null) ? new ArrayList<>(Arrays.asList(pnts)) : new ArrayList<>();
     }
          
     public Blueprint(String author, String name){
@@ -77,12 +77,13 @@ public class Blueprint {
         if (this.points.size()!=other.points.size()){
             return false;
         }
-        for (int i=0;i<this.points.size();i++){
-            if (this.points.get(i)!=other.points.get(i)){
+        for (int i = 0; i < this.points.size(); i++) {
+            if (!this.points.get(i).equals(other.points.get(i))) {
                 return false;
             }
         }
-        
+
+
         return true;
     }
     

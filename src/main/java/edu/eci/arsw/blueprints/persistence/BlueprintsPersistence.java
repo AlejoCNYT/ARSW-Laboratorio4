@@ -1,33 +1,55 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.eci.arsw.blueprints.persistence;
 
 import edu.eci.arsw.blueprints.model.Blueprint;
 
+import java.util.Set;
+
 /**
- *
- * @author hcadavid
+ * Interface defining the persistence layer for Blueprints.
  */
 public interface BlueprintsPersistence {
-    
+
     /**
-     * 
+     * Saves a new blueprint.
+     *
      * @param bp the new blueprint
      * @throws BlueprintPersistenceException if a blueprint with the same name already exists,
      *    or any other low-level persistence error occurs.
      */
-    public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException;
-    
+    void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException;
+
     /**
-     * 
+     * Retrieves a specific blueprint by author and name.
+     *
      * @param author blueprint's author
-     * @param bprintname blueprint's author
+     * @param bprintname blueprint's name
      * @return the blueprint of the given name and author
      * @throws BlueprintNotFoundException if there is no such blueprint
      */
-    public Blueprint getBlueprint(String author,String bprintname) throws BlueprintNotFoundException;
-    
+    Blueprint getBlueprint(String author, String bprintname) throws BlueprintNotFoundException;
+
+    /**
+     * Retrieves all blueprints available in the system.
+     *
+     * @return a set of all stored blueprints
+     */
+    Set<Blueprint> getAllBlueprints();
+
+    /**
+     * Retrieves all blueprints by a specific author.
+     *
+     * @param author the author's name
+     * @return a set of blueprints created by the specified author
+     * @throws BlueprintNotFoundException if no blueprints are found for the given author
+     */
+    Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException;
+
+    /**
+     * Deletes a specific blueprint by author and name.
+     *
+     * @param author blueprint's author
+     * @param bprintname blueprint's name
+     * @throws BlueprintNotFoundException if the blueprint does not exist
+     */
+    void deleteBlueprint(String author, String bprintname) throws BlueprintNotFoundException;
 }
