@@ -9,7 +9,8 @@ package edu.eci.arsw.blueprints.model;
  *
  * @author hcadavid
  */
-public class Point {
+public class Point
+{
    
     private int x;
     private int y;
@@ -19,7 +20,9 @@ public class Point {
         this.y = y;
     }
 
-    public Point() {
+    public Point()
+    {
+
     }    
     
     public int getX() {

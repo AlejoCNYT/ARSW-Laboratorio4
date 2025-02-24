@@ -5,53 +5,65 @@
  */
 package edu.eci.arsw.blueprints.services;
 
+import edu.eci.arsw.blueprints.filters.BlueprintFilter;
 import edu.eci.arsw.blueprints.model.Blueprint;
 import edu.eci.arsw.blueprints.model.Point;
 import edu.eci.arsw.blueprints.persistence.BlueprintNotFoundException;
+import edu.eci.arsw.blueprints.persistence.BlueprintPersistenceException;
 import edu.eci.arsw.blueprints.persistence.BlueprintsPersistence;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import edu.eci.arsw.blueprints.persistence.impl.InMemoryBlueprintPersistence;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-/**
- *
- * @author hcadavid
- */
 @Service
-public class BlueprintsServices {
-   
+public class BlueprintsServices
+{
+    private final BlueprintsPersistence bpp;
+    private final BlueprintFilter filter;  // Estrategia de filtrado
+
     @Autowired
-    BlueprintsPersistence bpp=null;
-    
-    public void addNewBlueprint(Blueprint bp){
-        
+    public BlueprintsServices(@Qualifier("inMemoryBlueprintPersistence") BlueprintsPersistence bpp,
+                              @Qualifier("subsamplingFilter") BlueprintFilter filter)
+    {
+        this.bpp = bpp;
+        this.filter = filter;
     }
-    
-    public Set<Blueprint> getAllBlueprints(){
+
+    public void addNewBlueprint(Blueprint bp) throws BlueprintPersistenceException
+    {
+        bpp.saveBlueprint(bp);
+    }
+
+    public Set<Blueprint> getAllBlueprints()
+    {
         return null;
     }
-    
-    /**
-     * 
-     * @param author blueprint's author
-     * @param name blueprint's name
-     * @return the blueprint of the given name created by the given author
-     * @throws BlueprintNotFoundException if there is no such blueprint
-     */
-    public Blueprint getBlueprint(String author,String name) throws BlueprintNotFoundException{
-        throw new UnsupportedOperationException("Not supported yet."); 
+
+    public Blueprint getBlueprint(String author, String name) throws BlueprintNotFoundException
+    {
+        Blueprint blueprint = bpp.getBlueprint(author, name);
+        if (blueprint == null)
+        {
+            throw new BlueprintNotFoundException("Blueprint not found for author: " + author + ", name: " + name);
+        }
+        return filter.filter(blueprint);
     }
-    
-    /**
-     * 
-     * @param author blueprint's author
-     * @return all the blueprints of the given author
-     * @throws BlueprintNotFoundException if the given author doesn't exist
-     */
-    public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException{
-        throw new UnsupportedOperationException("Not supported yet."); 
+
+    public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException
+    {
+        Set<Blueprint> blueprints = bpp.getBlueprintsByAuthor(author);
+
+        if (blueprints.isEmpty())
+        {
+            throw new BlueprintNotFoundException("Blueprints not found for author: " + author);
+        }
+
+        return blueprints;
     }
-    
 }

@@ -5,13 +5,27 @@
  */
 package edu.eci.arsw.blueprints.test.persistence.impl;
 
+import edu.eci.arsw.blueprints.filters.BlueprintFilter;
+import edu.eci.arsw.blueprints.filters.RedundancyFilter;
 import edu.eci.arsw.blueprints.model.Blueprint;
 import edu.eci.arsw.blueprints.model.Point;
 import edu.eci.arsw.blueprints.persistence.BlueprintNotFoundException;
 import edu.eci.arsw.blueprints.persistence.BlueprintPersistenceException;
 import edu.eci.arsw.blueprints.persistence.impl.InMemoryBlueprintPersistence;
+
+import java.util.Arrays;
+import java.util.List;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -19,7 +33,16 @@ import static org.junit.Assert.*;
  *
  * @author hcadavid
  */
-public class InMemoryPersistenceTest {
+public class InMemoryPersistenceTest
+{
+
+    private InMemoryBlueprintPersistence ibpp;
+
+    @Before
+    public void setUp()
+    {
+        ibpp = new InMemoryBlueprintPersistence();
+    }
     
     @Test
     public void saveNewAndLoadTest() throws BlueprintPersistenceException, BlueprintNotFoundException{
@@ -43,7 +66,8 @@ public class InMemoryPersistenceTest {
 
 
     @Test
-    public void saveExistingBpTest() {
+    public void saveExistingBpTest()
+    {
         InMemoryBlueprintPersistence ibpp=new InMemoryBlueprintPersistence();
         
         Point[] pts=new Point[]{new Point(0, 0),new Point(10, 10)};
@@ -65,10 +89,52 @@ public class InMemoryPersistenceTest {
         catch (BlueprintPersistenceException ex){
             
         }
-                
-        
+
+
     }
 
+    @Test
+    public void shouldSaveAndRetrieveBlueprint() throws BlueprintPersistenceException, BlueprintNotFoundException
+    {
+        // Arrange
+        Blueprint bp = new Blueprint("Alice", "Plan1", new Point[]{new Point(10, 20), new Point(30, 40)});
+        ibpp.saveBlueprint(bp);
 
-    
+        // Act
+        Blueprint retrieved = ibpp.getBlueprint("Alice", "Plan1");
+
+        // Assert
+        assertNotNull("Blueprint should be retrieved", retrieved);
+        assertEquals("Author should be Alice", "Alice", retrieved.getAuthor());
+        assertEquals("Name should be Plan1", "Plan1", retrieved.getName());
+    }
+
+    @Test(expected = BlueprintNotFoundException.class)
+    public void shouldThrowExceptionWhenBlueprintNotFound() throws BlueprintNotFoundException
+    {
+        ibpp.getBlueprint("Unknown", "NoPlan"); // No existe, debe lanzar excepción
+    }
+
+    @Test
+    public void shouldRetrieveBlueprintsByAuthor() throws BlueprintPersistenceException, BlueprintNotFoundException
+    {
+        // Arrange
+        Blueprint bp1 = new Blueprint("Bob", "PlanA", new Point[]{new Point(10, 10)});
+        Blueprint bp2 = new Blueprint("Bob", "PlanB", new Point[]{new Point(20, 20)});
+        ibpp.saveBlueprint(bp1);
+        ibpp.saveBlueprint(bp2);
+
+        // Act
+        Set<Blueprint> blueprints = ibpp.getBlueprintsByAuthor("Bob");
+
+        // Assert
+        assertEquals(   "Bob should have 2 blueprints", 2, blueprints.size());
+    }
+
+    @Test(expected = BlueprintNotFoundException.class)
+    public void shouldThrowExceptionWhenAuthorHasNoBlueprints() throws BlueprintNotFoundException
+    {
+        ibpp.getBlueprintsByAuthor("Charlie"); // No tiene planos, debe lanzar excepción
+    }
+
 }
